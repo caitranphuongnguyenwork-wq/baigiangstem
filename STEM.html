@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <title>♻️ Thùng rác thông minh - STEM</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+        html, body { width:100%; height:100%; overflow:hidden; font-family:'SVN Ziclets','Baloo 2',cursive,sans-serif; background:#e0ffe0; }
+
+        /* ===== SỬA LỖI FONT ===== */
+        input, button, select, textarea, .big-btn, .nav-tab {
+            font-family: inherit;
+            font-size: inherit;
+        }
+        /* ======================== */
+
+        .bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 20% 30%,#b9f6ca 10%,transparent 30%),radial-gradient(circle at 80% 70%,#a5d6a7 15%,transparent 35%),radial-gradient(circle at 40% 90%,#e8f5e9 20%,transparent 40%),linear-gradient(135deg,#e0f7fa,#fff9c4); z-index:-2; animation:bgShimmer 10s ease-in-out infinite alternate; }
+        @keyframes bgShimmer { 0%{filter:hue-rotate(0deg) brightness(1);} 100%{filter:hue-rotate(10deg) brightness(1.08);} }
+        .float-emoji { position:fixed; font-size:4.5rem; opacity:0.15; z-index:-1; pointer-events:none; animation:floatAnim 14s ease-in-out infinite alternate; }
+        .float-emoji:nth-child(1){ top:6%; left:4%; animation-delay:0s; }
+        .float-emoji:nth-child(2){ top:22%; right:6%; animation-delay:2.5s; }
+        .float-emoji:nth-child(3){ bottom:18%; left:8%; animation-delay:4.8s; }
+        .float-emoji:nth-child(4){ bottom:28%; right:10%; animation-delay:1.2s; }
+        .float-emoji:nth-child(5){ top:65%; left:85%; animation-delay:3.3s; }
+        .float-emoji:nth-child(6){ top:78%; left:12%; animation-delay:5.5s; }
+        @keyframes floatAnim { 0%{transform:translateY(0) rotate(0deg) scale(1);} 100%{transform:translateY(-28px) rotate(8deg) scale(1.05);} }
+        .app { display:flex; flex-direction:column; height:100vh; max-width:100%; overflow:hidden; }
+        .header { background:linear-gradient(135deg,#1b5e20,#2e7d32); color:white; padding:10px 15px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 30px 30px; box-shadow:0 8px 20px rgba(0,40,0,0.4); z-index:10; }
+        .logo { font-size:2rem; font-weight:800; display:flex; align-items:center; gap:10px; }
+        .led-status { display:flex; gap:8px; }
+        .led { width:14px; height:14px; border-radius:50%; background:#4caf50; box-shadow:0 0 8px #4caf50; animation:ledPulse 2s infinite alternate; }
+        .led.yellow { background:#ffeb3b; box-shadow:0 0 8px #ffeb3b; }
+        .led.red { background:#f44336; box-shadow:0 0 8px #f44336; }
+        @keyframes ledPulse { from{opacity:0.7;} to{opacity:1;} }
+        .nav-tabs { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; }
+        .nav-tab { background:rgba(255,255,255,0.3); border:none; color:white; font-weight:700; font-size:1.3rem; padding:10px 18px; border-radius:50px; cursor:pointer; transition:0.2s; display:flex; align-items:center; gap:6px; backdrop-filter:blur(4px); box-shadow:0 4px 6px rgba(0,0,0,0.1); white-space:nowrap; }
+        .nav-tab.active { background:#ffb74d; color:#3e2723; box-shadow:0 6px 0 #e65100; transform:scale(1.05); }
+        .nav-tab:active { transform:translateY(4px); box-shadow:0 2px 0 #bf360c; }
+        .sound-toggle { background:#8d6e63; box-shadow:0 6px 0 #4e342e; }
+        .scroll { flex:1; overflow-y:auto; padding:16px 15px 30px; scroll-behavior:smooth; display:flex; flex-direction:column; align-items:center; }
+        .screen { display:none; width:100%; max-width:950px; flex-direction:column; align-items:center; animation:fadeUp 0.35s ease; }
+        .screen.active { display:flex; }
+        @keyframes fadeUp { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+        .card { background:rgba(255,255,255,0.95); backdrop-filter:blur(14px); border-radius:40px; padding:25px 20px; margin:10px 0; width:100%; box-shadow:0 15px 35px rgba(30,80,20,0.2); border:3px solid #81c784; }
+        h2 { font-size:2.5rem; color:#2e7d32; display:flex; align-items:center; gap:10px; border-bottom:4px dotted #a5d6a7; padding-bottom:12px; margin-bottom:20px; }
+        .big-btn { background:#ffb74d; border:none; color:#3e2723; font-weight:900; font-size:2rem; padding:16px 30px; border-radius:70px; cursor:pointer; box-shadow:0 10px 0 #e65100; transition:0.07s linear; display:inline-flex; align-items:center; justify-content:center; gap:12px; margin:10px 0; letter-spacing:1px; touch-action:manipulation; text-transform:uppercase; }
+        .big-btn:active { transform:translateY(6px); box-shadow:0 3px 0 #bf360c; }
+        .big-btn.secondary { background:#b0bec5; box-shadow:0 8px 0 #78909c; color:#263238; }
+        .big-btn.green { background:#66bb6a; box-shadow:0 8px 0 #2e7d32; color:white; }
+        .big-btn.small { font-size:1.6rem; padding:12px 20px; }
+        .big-btn.rainbow { background:linear-gradient(45deg,#f44336,#ff9800,#ffeb3b,#4caf50,#2196f3,#9c27b0); background-size:400% 400%; animation:rainbow 3s ease infinite; color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.5); box-shadow:0 12px 0 #b71c1c; }
+        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .image-picker { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:20px 0; }
+        .pick-item { width:110px; height:110px; border-radius:30px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:3.5rem; font-weight:bold; color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.5); transition:0.2s; cursor:pointer; box-shadow:0 8px 0 rgba(0,0,0,0.3); background:rgba(255,255,255,0.2); backdrop-filter:blur(4px); border:4px solid white; }
+        .pick-item .label { font-size:0.9rem; margin-top:4px; font-weight:700; }
+        .pick-item.highlight { transform:scale(1.1); border-color:#ffeb3b; box-shadow:0 0 20px #ffeb3b,0 8px 0 rgba(0,0,0,0.3); filter:brightness(1.3); }
+        .pick-item.active { transform:scale(1.2); box-shadow:0 0 40px gold,0 12px 0 rgba(0,0,0,0.4); border-color:gold; animation:pulseActive 0.6s ease; }
+        @keyframes pulseActive { 0%{transform:scale(1);} 50%{transform:scale(1.35);} 100%{transform:scale(1.2);} }
+        .result-display { font-size:2.5rem; font-weight:900; background:#fff9c4; padding:20px 25px; border-radius:50px; border:6px solid #fbc02d; text-align:center; margin:15px 0; box-shadow:0 10px 0 #f57f17; min-height:90px; display:flex; align-items:center; justify-content:center; gap:15px; width:100%; word-break:break-word; }
+        .result-display .big-emoji { font-size:4rem; }
+        .screen-shake { animation:shake 0.6s ease-in-out; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 10%,30%,50%,70%,90%{transform:translateX(-8px);} 20%,40%,60%,80%{transform:translateX(8px);} }
+        .timer-panel { background:#1e272e; border-radius:50px; padding:20px; margin:15px 0; box-shadow:inset 0 0 30px #000; }
+        .timer-display { font-size:7rem; font-weight:900; color:#76ff03; text-align:center; font-family:'Courier New',monospace; text-shadow:0 0 25px #76ff03; letter-spacing:8px; transition:0.3s; }
+        .timer-display.warning { color:#ffeb3b; text-shadow:0 0 40px #ffeb3b; animation:blink 0.8s infinite alternate; }
+        .timer-display.danger { color:#ff1744; text-shadow:0 0 50px #ff1744; animation:blink 0.4s infinite alternate; }
+        @keyframes blink { 0%{opacity:1;} 100%{opacity:0.3;} }
+        .star-rating { display:flex; gap:10px; align-items:center; margin:10px 0; }
+        .star { font-size:3rem; cursor:pointer; color:#ccc; transition:0.2s; }
+        .star.active { color:#FFD700; transform:scale(1.2); }
+        .star-value { font-size:2rem; margin-left:15px; font-weight:bold; }
+        .star-chart { display:flex; flex-direction:column; gap:20px; background:white; border-radius:30px; padding:20px; box-shadow:inset 0 0 10px #ccc; }
+        .star-row { display:flex; align-items:center; gap:10px; font-size:1.8rem; }
+        .star-label { width:100px; text-align:right; font-weight:bold; }
+        .stars { color:#FFD700; letter-spacing:4px; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:100; justify-content:center; align-items:center; }
+        .modal.active { display:flex; }
+        .modal-content { background:white; padding:30px; border-radius:50px; max-width:450px; width:90%; text-align:center; font-size:2rem; box-shadow:0 20px 40px rgba(0,0,0,0.5); }
+        .countdown-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:200; font-size:10rem; color:white; font-weight:bold; pointer-events:none; }
+        @media (max-width:650px) { .header{flex-direction:column; align-items:stretch;} .logo{font-size:1.8rem; justify-content:center;} .nav-tab{font-size:1rem; padding:8px 12px;} .timer-display{font-size:5rem;} h2{font-size:2.2rem;} .big-btn{font-size:1.6rem; padding:14px 20px;} .pick-item{width:90px; height:90px; font-size:2.5rem;} .star{font-size:2.5rem;} }
+        @media print { .app,.bg,.float-emoji,.header,.nav-tabs,.modal,.countdown-overlay{display:none!important;} #screen-qr .card{border:none; box-shadow:none; background:white;} #checklistSection{display:block!important;} .qr-section>*:not(#checklistSection){display:none;} #checklistSection .big-btn,#checklistSection #checklistSavedMsg{display:none;} }
+
+        /* Thêm style cho game và history */
+        .game-options { display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin:20px 0; }
+        .game-option { padding:15px 25px; border-radius:50px; font-size:2rem; font-weight:bold; border:4px solid #fff; cursor:pointer; transition:0.2s; box-shadow:0 6px 0 rgba(0,0,0,0.3); color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.5); min-width:120px; text-align:center; }
+        .game-option:active { transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.3); }
+        .game-option.correct { background:#4caf50; animation:pulseGreen 0.5s ease; }
+        .game-option.wrong { background:#f44336; animation:shake 0.5s ease; }
+        @keyframes pulseGreen { 0%{transform:scale(1);} 50%{transform:scale(1.2); background:#66bb6a;} 100%{transform:scale(1);} }
+        .game-score { font-size:2.5rem; font-weight:bold; background:#1e272e; color:#76ff03; padding:10px 30px; border-radius:60px; display:inline-block; }
+        .history-table { width:100%; border-collapse:collapse; font-size:1.6rem; margin-top:15px; }
+        .history-table th { background:#2e7d32; color:white; padding:8px; }
+        .history-table td { padding:8px; border-bottom:1px solid #ccc; text-align:center; }
+        .history-table tr:nth-child(even) { background:#f1f8e9; }
+        @media (min-width:768px) { .game-option { font-size:2.5rem; padding:20px 35px; } .history-table { font-size:1.8rem; } }
+    </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="float-emoji">🌳</div><div class="float-emoji">🍃</div><div class="float-emoji">♻️</div><div class="float-emoji">🗑️</div><div class="float-emoji">📦</div><div class="float-emoji">🌸</div>
+
+<div class="app" id="appContainer">
+    <header class="header">
+        <div class="logo"><span>♻️</span> THÙNG RÁC THÔNG MINH</div>
+        <div class="led-status"><div class="led green"></div><div class="led yellow"></div><div class="led red"></div></div>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" data-screen="picker">🎯 Rác</button>
+        <button class="nav-tab" data-screen="game">🏆 Thách thức</button>
+        <button class="nav-tab" data-screen="simulate">📐 Mô phỏng</button>
+        <button class="nav-tab" data-screen="timer">⏳ Giờ</button>
+        <button class="nav-tab" data-screen="vote">⭐ Điểm</button>
+        <button class="nav-tab" data-screen="tech">🔬 STEM</button>
+        <button class="nav-tab" data-screen="qr">📱 QR</button>
+        <button class="nav-tab sound-toggle" id="soundToggle">🔊</button>
+    </div>
+
+    <div class="scroll" id="scrollArea">
+        <!-- Picker -->
+        <div id="screen-picker" class="screen active">
+            <div class="card">
+                <h2><span>🎯</span> Vòng quay phân loại rác</h2>
+                <div class="image-picker" id="pickerContainer"></div>
+                <button class="big-btn rainbow" id="randomPickBtn"><span>🎡</span> QUAY SỐ</button>
+                <div class="result-display" id="pickResult">👉 Nhấn "QUAY SỐ"!</div>
+                <p style="font-size:2rem; font-weight:bold; margin-top:6px;">🟦🟩🟥 Giơ thùng đúng màu!</p>
+                <div style="margin-top:25px;">
+                    <h3 style="font-size:2rem;">📜 Lịch sử quay</h3>
+                    <div id="historyContainer" style="max-height:250px; overflow-y:auto; background:white; border-radius:30px; padding:10px;">
+                        <table class="history-table" id="historyTable">
+                            <thead><tr><th>#</th><th>Rác</th><th>Thùng</th><th>Thời gian</th></tr></thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
+                    <button class="big-btn secondary small" id="clearHistoryBtn" style="font-size:1.6rem;">🗑️ Xóa lịch sử</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game -->
+        <div id="screen-game" class="screen">
+            <div class="card">
+                <h2><span>🏆</span> Thách thức phân loại rác</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                    <div class="game-score" id="gameScoreDisplay">Điểm: 0</div>
+                    <div class="game-score" style="background:#263238; color:#ffeb3b;" id="highScoreDisplay">🏅 Cao: 0</div>
+                </div>
+                <div id="gameQuestion" style="font-size:3rem; text-align:center; margin:20px 0;">👆 Nhấn "BẮT ĐẦU" để chơi</div>
+                <div class="game-options" id="gameOptions"></div>
+                <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                    <button class="big-btn green" id="startGameBtn"><span>▶</span> BẮT ĐẦU</button>
+                    <button class="big-btn secondary" id="resetGameBtn"><span>↺</span> Làm mới</button>
+                </div>
+                <div id="gameMessage" style="font-size:2rem; text-align:center; margin-top:10px; min-height:60px;"></div>
+            </div>
+        </div>
+
+        <!-- Simulate -->
+        <div id="screen-simulate" class="screen">
+            <div class="card">
+                <h2><span>📐</span> Mô phỏng thùng carton</h2>
+                <div class="carton-box" style="background:#d7ccc8; border:6px solid #5d4037; border-radius:30px 30px 15px 15px; padding:18px; margin:18px 0;">
+                    <div style="background:#8d6e63; height:44px; border-radius:25px 25px 0 0; margin-bottom:10px; display:flex; justify-content:center; align-items:center; font-size:2rem; font-weight:bold; color:white;">📦 THÙNG CARTON</div>
+                    <div class="bin-frame" style="display:flex; height:140px; background:#efebe9; border-radius:20px; overflow:hidden; border:5px solid #4e342e;">
+                        <div id="comp1" style="background:#42a5f5; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.8rem; color:white;">🥤 Nhựa</div>
+                        <div id="comp2" style="background:#66bb6a; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.8rem; color:white;">🍂 Lá</div>
+                        <div id="comp3" style="background:#ef5350; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.8rem; color:white;">🔋 Pin</div>
+                    </div>
+                </div>
+                <div class="slider-group">
+                    <label>🔵 Nhựa <span id="val1">33</span>%</label>
+                    <input type="range" id="slider1" min="0" max="100" value="33" step="1">
+                    <label>🟢 Lá <span id="val2">33</span>%</label>
+                    <input type="range" id="slider2" min="0" max="100" value="33" step="1">
+                    <label>🔴 Pin <span id="val3">34</span>%</label>
+                    <input type="range" id="slider3" min="0" max="100" value="34" step="1">
+                </div>
+                <div id="errorSimulate" style="display:none; background:#ffcdd2; color:#c62828; font-weight:900; font-size:1.8rem; padding:15px; border-radius:35px; text-align:center; margin:10px 0;">⚠️ Tổng > 100%! Đã điều chỉnh.</div>
+                <div style="font-size:2.5rem; text-align:center; font-weight:bold;">Tổng: <span id="totalWidth">100</span>%</div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div id="screen-timer" class="screen">
+            <div class="card">
+                <h2><span>⏳</span> Đồng hồ đếm ngược</h2>
+                <div class="time-input-group" style="display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:15px;">
+                    <label style="font-size:1.8rem;">⏱️ Phút:</label>
+                    <input type="number" id="customMinutes" value="10" min="1" max="120" step="1" style="font-size:2rem; padding:12px; border-radius:40px; border:4px solid #4caf50; width:100px; text-align:center;">
+                    <button class="big-btn small" id="setTimeBtn">⏲️ Đặt</button>
+                </div>
+                <div style="display:flex; gap:12px; justify-content:center;">
+                    <button class="big-btn" id="startTimerBtn"><span>▶</span> BẮT ĐẦU</button>
+                    <button class="big-btn secondary" id="resetTimerBtn"><span>↺</span> LẠI</button>
+                </div>
+                <div class="timer-panel"><div class="timer-display" id="timerDisplay">10:00</div></div>
+                <p style="font-size:1.8rem; text-align:center;">🔔 Hết giờ kêu to!</p>
+            </div>
+        </div>
+
+        <!-- Vote -->
+        <div id="screen-vote" class="screen">
+            <div class="card">
+                <h2><span>⭐</span> Bình chọn sản phẩm</h2>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <label style="font-size:1.8rem;">👥 Nhóm:</label>
+                    <div class="group-manager" style="display:flex; gap:12px; align-items:center;">
+                        <select id="groupSelect" style="font-size:1.8rem; padding:12px; border-radius:40px; border:4px solid #4caf50; flex:1;"></select>
+                        <button class="big-btn small green" id="addGroupBtn">➕</button>
+                        <button class="big-btn small secondary" id="editGroupBtn">✏️</button>
+                        <button class="big-btn small secondary" id="removeGroupBtn">➖</button>
+                    </div>
+                    <div id="starVotingArea"></div>
+                    <button class="big-btn green" id="submitVoteBtn"><span>📤</span> GỬI ĐIỂM</button>
+                </div>
+                <div style="margin-top:25px; height:300px;"><canvas id="voteChart"></canvas></div>
+                <div class="star-chart" id="starChartContainer"></div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                    <button class="big-btn secondary" id="clearVotesBtn" style="font-size:1.8rem;"><span>🗑️</span> Xóa điểm</button>
+                    <button class="big-btn green" id="shareVotesBtn" style="font-size:1.8rem;"><span>📤</span> Chia sẻ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tech -->
+        <div id="screen-tech" class="screen">
+            <div class="card">
+                <h2><span>🔬</span> Thùng rác hoạt động thế nào?</h2>
+                <div style="font-size:1.8rem; line-height:1.6;">
+                    <p>👋 Các bạn lớp 4,5 ơi! Thùng rác thông minh có <strong>mắt thần</strong> và <strong>tay máy</strong> đấy!</p>
+                    <div style="background:#f5f5f5; padding:15px; border-radius:20px; margin:10px 0;">
+                        <strong>🔍 Mắt thần (Cảm biến siêu âm):</strong> Phát ra sóng âm, khi có vật đến gần, sóng dội lại báo cho "não" biết.
+                    </div>
+                    <div style="background:#f5f5f5; padding:15px; border-radius:20px; margin:10px 0;">
+                        <strong>🧠 Bộ não (Arduino):</strong> Như máy tính nhỏ, nhận tín hiệu và ra lệnh: "Có rác! Mở nắp ra!"
+                    </div>
+                    <div style="background:#f5f5f5; padding:15px; border-radius:20px; margin:10px 0;">
+                        <strong>💪 Tay máy (Servo):</strong> Động cơ nhỏ quay để nâng nắp thùng lên, đợi một lúc rồi đóng lại.
+                    </div>
+                    <p>⚡ Tất cả chạy bằng <strong>pin 5V</strong> an toàn. Thật thú vị phải không nào?</p>
+                    <details>
+                        <summary style="font-weight:bold;">📟 Code Arduino mẫu</summary>
+                        <pre style="background:#263238; color:#76ff03; padding:15px; border-radius:20px; font-size:1.4rem;">
+#include &lt;Servo.h&gt;
+Servo myservo;
+int trig = 7, echo = 8;
+void setup() {
+  pinMode(trig, OUTPUT);
+  pinMode(echo, INPUT);
+  myservo.attach(9);
+  myservo.write(0);
+}
+void loop() {
+  long duration, distance;
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  duration = pulseIn(echo, HIGH);
+  distance = duration * 0.034 / 2;
+  if (distance < 20) {
+    myservo.write(90);
+    delay(3000);
+    myservo.write(0);
+  }
+  delay(200);
+}
+                        </pre>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR -->
+        <div id="screen-qr" class="screen">
+            <div class="card">
+                <h2><span>📱</span> Checklist & QR</h2>
+                <div class="qr-section" style="background:white; padding:25px; border-radius:45px; display:flex; flex-direction:column; align-items:center; gap:18px;">
+                    <div id="qrcode" style="padding:20px; background:white; border-radius:35px;"></div>
+                    <input type="text" id="customUrl" placeholder="URL tùy chỉnh..." style="font-size:1.6rem; padding:10px; border-radius:30px; border:2px solid #4caf50; width:100%; text-align:center;">
+                    <button class="big-btn small" id="generateQRBtn">🔄 Tạo QR</button>
+                    <button class="big-btn" id="openChecklistBtn" style="background:#81c784; box-shadow:0 10px 0 #2e7d32; color:white;">📋 Mở Checklist</button>
+                    <div id="checklistSection" style="display:none; width:100%;">
+                        <div style="background:#fff9c4; padding:25px; border-radius:45px; margin-top:20px;">
+                            <h3 style="font-size:2.5rem;">✅ Bảng kiểm</h3>
+                            <label class="checklist-item"><input type="checkbox" id="check1"> 📌 Dán nhãn</label>
+                            <label class="checklist-item"><input type="checkbox" id="check2"> 🧴 Có nắp</label>
+                            <label class="checklist-item"><input type="checkbox" id="check3"> 🎨 Trang trí</label>
+                            <label class="checklist-item"><input type="checkbox" id="check4"> 📏 Kích thước</label>
+                            <label class="checklist-item">💬 Nhận xét: <input type="text" id="commentInput" style="font-size:1.8rem; flex:1; padding:8px; border-radius:20px; border:2px solid #4caf50;"></label>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="big-btn green" id="saveChecklistBtn">💾 Lưu</button>
+                                <button class="big-btn secondary" id="printChecklistBtn">🖨️ In</button>
+                            </div>
+                            <p id="checklistSavedMsg" style="color:#2e7d32; font-size:1.8rem;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal hướng dẫn -->
+<div class="modal active" id="tutorialModal">
+    <div class="modal-content">
+        <h2>👋 Chào mừng!</h2>
+        <p>🎯 Rác - 🏆 Thách thức - 📐 Mô phỏng - ⏳ Giờ - ⭐ Điểm - 🔬 STEM - 📱 QR</p>
+        <button class="big-btn green" id="closeTutorialBtn">🚀 BẮT ĐẦU</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ========== ÂM THANH ==========
+    let audioCtx = null;
+    let soundEnabled = true;
+    function getAudioContext() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+    }
+    function playSound(type) {
+        if (!soundEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            const beep = (freq, start, dur, vol=0.15, waveform='sine') => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = waveform; o.frequency.value = freq;
+                g.gain.setValueAtTime(vol, start);
+                g.gain.exponentialRampToValueAtTime(0.001, start+dur);
+                o.start(start); o.stop(start+dur);
+            };
+            switch(type) {
+                case 'click': beep(900, now, 0.08); break;
+                case 'ting': beep(1400, now, 0.3, 0.25); break;
+                case 'pop': beep(600, now, 0.15, 0.2); break;
+                case 'whoosh': {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(100, now+0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now+0.2);
+                    osc.start(now); osc.stop(now+0.2);
+                    break;
+                }
+                case 'tick': beep(1000, now, 0.05, 0.1); break;
+                case 'countdown':
+                    beep(523, now, 0.2, 0.15, 'triangle');
+                    beep(659, now+0.15, 0.2, 0.15, 'triangle');
+                    beep(784, now+0.3, 0.2, 0.15, 'triangle');
+                    break;
+                case 'go':
+                    beep(1200, now, 0.4, 0.3, 'square');
+                    beep(1500, now+0.1, 0.2, 0.2, 'square');
+                    break;
+                case 'drumroll':
+                    for(let i=0; i<12; i++) {
+                        setTimeout(() => {
+                            if(!soundEnabled) return;
+                            const o = ctx.createOscillator();
+                            const g = ctx.createGain();
+                            o.connect(g); g.connect(ctx.destination);
+                            o.type = 'triangle';
+                            o.frequency.value = 80 + Math.random()*40;
+                            g.gain.setValueAtTime(0.2, ctx.currentTime);
+                            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.08);
+                            o.start(ctx.currentTime); o.stop(ctx.currentTime+0.08);
+                        }, i*50);
+                    }
+                    break;
+                case 'fanfare':
+                    [523.25,659.25,783.99,1046.5].forEach((freq,i) => {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.type = 'square'; o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.2, now+i*0.12);
+                        g.gain.exponentialRampToValueAtTime(0.001, now+i*0.12+0.25);
+                        o.start(now+i*0.12); o.stop(now+i*0.12+0.25);
+                    });
+                    break;
+                case 'alarm': {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'square'; osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now+0.5);
+                    osc.start(now); osc.stop(now+0.5);
+                    for(let i=1; i<3; i++) {
+                        const o2 = ctx.createOscillator();
+                        const g2 = ctx.createGain();
+                        o2.connect(g2); g2.connect(ctx.destination);
+                        o2.type = 'square'; o2.frequency.value = 800;
+                        g2.gain.setValueAtTime(0.3, now+i*0.5);
+                        g2.gain.exponentialRampToValueAtTime(0.001, now+i*0.5+0.5);
+                        o2.start(now+i*0.5); o2.stop(now+i*0.5+0.5);
+                    }
+                    break;
+                }
+            }
+        } catch(e) {}
+    }
+    function playClick(){ playSound('click'); }
+    function playTing(){ playSound('ting'); }
+    function playPop(){ playSound('pop'); }
+    function playWhoosh(){ playSound('whoosh'); }
+    function playTick(){ playSound('tick'); }
+    function playCountdown(){ playSound('countdown'); }
+    function playGo(){ playSound('go'); }
+    function playDrumroll(){ playSound('drumroll'); }
+    function playFanfare(){ playSound('fanfare'); }
+    function playAlarm(){ playSound('alarm'); }
+
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('.big-btn, .nav-tab:not(.sound-toggle), .pick-item, .star');
+        if (target && !target.classList.contains('sound-toggle')) playClick();
+    });
+    document.getElementById('soundToggle').addEventListener('click', function(e) {
+        e.stopPropagation();
+        soundEnabled = !soundEnabled;
+        this.innerHTML = soundEnabled ? '🔊' : '🔇';
+        if (soundEnabled) playClick();
+    });
+
+    // ========== LƯU TRỮ ==========
+    function safeLS(key, val=null) {
+        try {
+            if (val !== null) { localStorage.setItem(key, JSON.stringify(val)); }
+            else { let item = localStorage.getItem(key); return item ? JSON.parse(item) : null; }
+        } catch(e) { alert('⚠️ Lỗi lưu trữ!'); return null; }
+    }
+
+    // ========== ĐIỀU HƯỚNG ==========
+    const tabs = document.querySelectorAll('.nav-tab:not(.sound-toggle)');
+    const screens = {
+        picker: document.getElementById('screen-picker'),
+        game: document.getElementById('screen-game'),
+        simulate: document.getElementById('screen-simulate'),
+        timer: document.getElementById('screen-timer'),
+        vote: document.getElementById('screen-vote'),
+        tech: document.getElementById('screen-tech'),
+        qr: document.getElementById('screen-qr')
+    };
+    function switchScreen(id) {
+        Object.values(screens).forEach(s => s.classList.remove('active'));
+        if (screens[id]) screens[id].classList.add('active');
+        tabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.nav-tab[data-screen="${id}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        document.getElementById('scrollArea').scrollTop = 0;
+        if (id === 'qr') generateQRCode();
+        if (id === 'vote') { populateGroupSelect(); renderStarChart(); renderVoteChart(); }
+        if (id === 'picker') renderHistory();
+    }
+    tabs.forEach(tab => tab.addEventListener('click', () => switchScreen(tab.dataset.screen)));
+
+    // ========== PICKER ==========
+    const pickerData = [
+        { label:'Chai nhựa', emoji:'🥤', color:'#42a5f5', bin:'XANH DƯƠNG' },
+        { label:'Lá cây', emoji:'🍂', color:'#66bb6a', bin:'XANH LÁ' },
+        { label:'Pin cũ', emoji:'🔋', color:'#ef5350', bin:'ĐỎ' },
+        { label:'Giấy báo', emoji:'📰', color:'#ffa726', bin:'VÀNG' },
+        { label:'Vỏ hộp sữa', emoji:'🥛', color:'#AB47BC', bin:'TÍM' },
+        { label:'Thủy tinh', emoji:'🍾', color:'#26C6DA', bin:'XANH LƠ' }
+    ];
+    const pickerContainer = document.getElementById('pickerContainer');
+    let pickerItems = [];
+    pickerData.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'pick-item';
+        div.dataset.index = idx;
+        div.style.background = `radial-gradient(circle at 20% 30%, ${item.color}, #1a237e)`;
+        div.innerHTML = `<span style="font-size:3rem;">${item.emoji}</span><span class="label">${item.label}</span>`;
+        div.addEventListener('click', function() {
+            if (isSpinning) return;
+            clearHighlights();
+            this.classList.add('active');
+            updateResult(idx);
+            playPop();
+        });
+        pickerContainer.appendChild(div);
+        pickerItems.push(div);
+    });
+    function clearHighlights() { pickerItems.forEach(el => el.classList.remove('active','highlight')); }
+    function updateResult(idx) {
+        const data = pickerData[idx];
+        document.getElementById('pickResult').innerHTML = `<span class="big-emoji">${data.emoji}</span> ${data.label} → Thùng <span style="color:${data.color}; font-weight:900;">${data.bin}</span>`;
+        // Lưu lịch sử
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('vi-VN');
+        addHistoryItem({ emoji:data.emoji, label:data.label, bin:data.bin, color:data.color, time:timeStr });
+    }
+    let isSpinning = false;
+    document.getElementById('randomPickBtn').addEventListener('click', function() {
+        if (isSpinning) return;
+        isSpinning = true;
+        clearHighlights();
+        document.getElementById('pickResult').innerHTML = '🎰 Sẵn sàng...';
+        showCountdown(() => {
+            document.getElementById('pickResult').innerHTML = '🎰 Đang quay...';
+            playWhoosh();
+            let current = 0;
+            const spinDuration = 2500;
+            const startTime = Date.now();
+            const totalItems = pickerItems.length;
+            const finalIdx = Math.floor(Math.random() * totalItems);
+            let lastTick = 0;
+            function spin() {
+                const elapsed = Date.now() - startTime;
+                if (elapsed >= spinDuration) {
+                    pickerItems.forEach(el => el.classList.remove('highlight'));
+                    const target = pickerItems[finalIdx];
+                    target.classList.add('active');
+                    updateResult(finalIdx);
+                    playDrumroll();
+                    setTimeout(() => playFanfare(), 400);
+                    document.getElementById('appContainer').classList.add('screen-shake');
+                    setTimeout(() => document.getElementById('appContainer').classList.remove('screen-shake'), 600);
+                    spawnConfetti();
+                    isSpinning = false;
+                    return;
+                }
+                const progress = elapsed / spinDuration;
+                const interval = 30 + progress * 200;
+                if (elapsed - lastTick > interval) {
+                    lastTick = elapsed;
+                    pickerItems.forEach(el => el.classList.remove('highlight'));
+                    current = (current + 1) % totalItems;
+                    pickerItems[current].classList.add('highlight');
+                    playTick();
+                }
+                requestAnimationFrame(spin);
+            }
+            requestAnimationFrame(spin);
+        });
+    });
+    function showCountdown(callback) {
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        document.body.appendChild(overlay);
+        let count = 3;
+        overlay.textContent = count;
+        playCountdown();
+        const interval = setInterval(() => {
+            count--;
+            if (count > 0) { overlay.textContent = count; playCountdown(); }
+            else {
+                overlay.textContent = 'QUAY!';
+                playGo();
+                clearInterval(interval);
+                setTimeout(() => { overlay.remove(); if(callback) callback(); }, 500);
+            }
+        }, 700);
+    }
+    function spawnConfetti() {
+        const emojis = ['🎉','✨','🌟','🎊','💥','♻️','🗑️','🎈','🎯'];
+        for (let i=0; i<20; i++) {
+            const span = document.createElement('span');
+            span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            span.style.cssText = `position:fixed; font-size:${2.5+Math.random()*3}rem; pointer-events:none; z-index:1000; left:${Math.random()*100}%; top:${Math.random()*100}%; transition: all 1.8s ease-out; opacity:1;`;
+            document.body.appendChild(span);
+            requestAnimationFrame(() => {
+                span.style.transform = `translateY(-${200+Math.random()*300}px) rotate(${Math.random()*720}deg)`;
+                span.style.opacity = '0';
+            });
+            setTimeout(() => span.remove(), 1800);
+        }
+    }
+
+    // ========== LỊCH SỬ ==========
+    const HISTORY_KEY = 'spinHistory';
+    function getHistory() { return safeLS(HISTORY_KEY) || []; }
+    function saveHistory(h) { safeLS(HISTORY_KEY, h); }
+    function addHistoryItem(item) {
+        let history = getHistory();
+        history.unshift(item);
+        if (history.length > 10) history = history.slice(0, 10);
+        saveHistory(history);
+        renderHistory();
+    }
+    function renderHistory() {
+        const tbody = document.getElementById('historyBody');
+        const history = getHistory();
+        tbody.innerHTML = '';
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4">Chưa có lịch sử quay.</td></tr>';
+            return;
+        }
+        history.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${index+1}</td><td>${item.emoji} ${item.label}</td><td style="color:${item.color}; font-weight:bold;">${item.bin}</td><td>${item.time}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+    document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+        if (confirm('Xóa toàn bộ lịch sử quay?')) { saveHistory([]); renderHistory(); playClick(); }
+    });
+
+    // ========== MÔ PHỎNG ==========
+    const s1=document.getElementById('slider1'), s2=document.getElementById('slider2'), s3=document.getElementById('slider3');
+    const v1=document.getElementById('val1'), v2=document.getElementById('val2'), v3=document.getElementById('val3');
+    const totalSpan=document.getElementById('totalWidth'), errDiv=document.getElementById('errorSimulate');
+    const c1=document.getElementById('comp1'), c2=document.getElementById('comp2'), c3=document.getElementById('comp3');
+    function enforceTotal() {
+        let a=+s1.value, b=+s2.value, c=+s3.value;
+        if (a+b+c > 100) {
+            if (c>0 && a+b+c>100) { c = Math.max(0, 100-a-b); s3.value=c; }
+            if (a+b+c>100 && b>0) { b = Math.max(0, 100-a-c); s2.value=b; }
+            if (a+b+c>100 && a>0) { a = Math.max(0, 100-b-c); s1.value=a; }
+            errDiv.style.display='block';
+        } else errDiv.style.display='none';
+        return [a,b,c];
+    }
+    function updateSim() {
+        let [a,b,c] = enforceTotal();
+        v1.textContent=a; v2.textContent=b; v3.textContent=c;
+        totalSpan.textContent=a+b+c;
+        c1.style.width=a+'%'; c2.style.width=b+'%'; c3.style.width=c+'%';
+    }
+    s1.addEventListener('input',updateSim); s2.addEventListener('input',updateSim); s3.addEventListener('input',updateSim);
+    updateSim();
+
+    // ========== TIMER ==========
+    let timerInterval=null, timeLeft=600, totalTime=600;
+    let isCountdowning = false;
+    const timerDisplay=document.getElementById('timerDisplay'), customMin=document.getElementById('customMinutes'), startBtn=document.getElementById('startTimerBtn');
+    function fmt(sec){ let m=Math.floor(sec/60), s=sec%60; return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+    function updateTimerDisplay() {
+        timerDisplay.textContent = fmt(timeLeft);
+        timerDisplay.classList.remove('warning','danger');
+        if (timeLeft <= 10 && timeLeft > 0) timerDisplay.classList.add('danger');
+        else if (timeLeft <= 30) timerDisplay.classList.add('warning');
+    }
+    function stopTimer(reset=false) {
+        if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+        if(!reset) startBtn.innerHTML='<span>▶</span> TIẾP TỤC';
+    }
+    function startTimer() {
+        if(timerInterval){ stopTimer(); return; }
+        if (isCountdowning) return;
+        isCountdowning = true;
+        showCountdown(() => {
+            isCountdowning = false;
+            if(timeLeft<=0){ timeLeft=totalTime; updateTimerDisplay(); }
+            timerInterval = setInterval(()=>{
+                timeLeft--;
+                updateTimerDisplay();
+                if(timeLeft<=0){
+                    stopTimer(); timerDisplay.textContent='00:00'; timerDisplay.classList.add('danger');
+                    playAlarm(); startBtn.innerHTML='<span>▶</span> BẮT ĐẦU';
+                }
+            },1000);
+            startBtn.innerHTML='<span>⏸️</span> DỪNG';
+            playWhoosh();
+        });
+    }
+    function resetTimer(){ stopTimer(true); timeLeft=totalTime; updateTimerDisplay(); startBtn.innerHTML='<span>▶</span> BẮT ĐẦU'; }
+    startBtn.addEventListener('click',startTimer);
+    document.getElementById('resetTimerBtn').addEventListener('click',resetTimer);
+    document.getElementById('setTimeBtn').addEventListener('click',()=>{
+        let mins=parseInt(customMin.value)||10;
+        if(mins<1) mins=1; if(mins>120) mins=120;
+        customMin.value=mins; totalTime=mins*60; resetTimer();
+    });
+    updateTimerDisplay();
+
+    // ========== VOTE ==========
+    const criteria = [
+        { id:'creative', label:'💡 Sáng tạo' },
+        { id:'useful', label:'⚙️ Ứng dụng' },
+        { id:'craft', label:'🔧 Gia công' },
+        { id:'aesthetic', label:'🎨 Thẩm mỹ' }
+    ];
+    let currentVote = { creative:5, useful:5, craft:5, aesthetic:5 };
+    function buildStarWidgets() {
+        const container = document.getElementById('starVotingArea');
+        container.innerHTML = '';
+        criteria.forEach(c => {
+            const row = document.createElement('div');
+            row.style.display = 'flex'; row.style.alignItems = 'center'; row.style.gap = '10px'; row.style.margin = '10px 0';
+            const label = document.createElement('span');
+            label.style.fontSize = '1.8rem'; label.style.fontWeight = 'bold'; label.textContent = c.label;
+            const starsDiv = document.createElement('div');
+            starsDiv.className = 'star-rating'; starsDiv.id = `stars-${c.id}`;
+            for (let i=1; i<=10; i++) {
+                const star = document.createElement('span');
+                star.className = 'star'; star.textContent = '★'; star.dataset.value = i;
+                star.addEventListener('click', () => setStarRating(c.id, i));
+                starsDiv.appendChild(star);
+            }
+            const valSpan = document.createElement('span');
+            valSpan.className = 'star-value'; valSpan.id = `val-${c.id}`;
+            valSpan.textContent = currentVote[c.id] + '/10';
+            row.appendChild(label); row.appendChild(starsDiv); row.appendChild(valSpan);
+            container.appendChild(row);
+            updateStarDisplay(c.id, currentVote[c.id]);
+        });
+    }
+    function setStarRating(criterion, value) {
+        currentVote[criterion] = value;
+        updateStarDisplay(criterion, value);
+        document.getElementById(`val-${criterion}`).textContent = value + '/10';
+        playPop();
+    }
+    function updateStarDisplay(criterion, value) {
+        const stars = document.querySelectorAll(`#stars-${criterion} .star`);
+        stars.forEach(star => {
+            const starValue = parseInt(star.dataset.value);
+            if (starValue <= value) star.classList.add('active');
+            else star.classList.remove('active');
+        });
+    }
+
+    const groupSelect = document.getElementById('groupSelect');
+    function getGroups() {
+        let g = safeLS('voteGroups');
+        if (!g || !Array.isArray(g)) {
+            g = [{id:Date.now()+1, name:'Nhóm 1'},{id:Date.now()+2, name:'Nhóm 2'},{id:Date.now()+3, name:'Nhóm 3'}];
+            safeLS('voteGroups', g);
+        }
+        return g;
+    }
+    function saveGroups(g){ safeLS('voteGroups', g); }
+    function getVotes(){ return safeLS('stemBinVotes') || []; }
+    function saveVotes(v){ safeLS('stemBinVotes', v); }
+
+    function populateGroupSelect() {
+        let groups = getGroups();
+        groupSelect.innerHTML = '';
+        groups.forEach(g => {
+            let opt = document.createElement('option'); opt.value=g.id; opt.textContent=g.name;
+            groupSelect.appendChild(opt);
+        });
+        loadCurrentVoteForGroup();
+    }
+    function loadCurrentVoteForGroup() {
+        const groupId = parseInt(groupSelect.value);
+        const votes = getVotes();
+        const existing = votes.find(v => v.groupId === groupId);
+        if (existing) {
+            currentVote = { creative:existing.creative, useful:existing.useful, craft:existing.craft, aesthetic:existing.aesthetic };
+        } else {
+            currentVote = { creative:5, useful:5, craft:5, aesthetic:5 };
+        }
+        buildStarWidgets();
+    }
+    groupSelect.addEventListener('change', loadCurrentVoteForGroup);
+
+    document.getElementById('addGroupBtn').addEventListener('click', ()=>{
+        let groups=getGroups(); let name=prompt('Tên nhóm mới:','Nhóm '+(groups.length+1));
+        if(name && name.trim()){ groups.push({id:Date.now(), name:name.trim()}); saveGroups(groups); populateGroupSelect(); renderStarChart(); renderVoteChart(); loadCurrentVoteForGroup(); }
+    });
+    document.getElementById('editGroupBtn').addEventListener('click', ()=>{
+        let id=parseInt(groupSelect.value), groups=getGroups();
+        let group=groups.find(g=>g.id===id);
+        if(group){ let newName=prompt('Sửa tên:',group.name); if(newName && newName.trim()){ group.name=newName.trim(); saveGroups(groups); populateGroupSelect(); renderStarChart(); renderVoteChart(); } }
+    });
+    document.getElementById('removeGroupBtn').addEventListener('click', ()=>{
+        if(groupSelect.options.length<=1){ alert('Không thể xóa nhóm cuối cùng.'); return; }
+        if(confirm('Xóa nhóm này?')){
+            let id=parseInt(groupSelect.value);
+            let groups=getGroups().filter(g=>g.id!==id);
+            saveGroups(groups);
+            let votes=getVotes().filter(v=>v.groupId!==id);
+            saveVotes(votes);
+            populateGroupSelect();
+            renderStarChart();
+            renderVoteChart();
+        }
+    });
+
+    document.getElementById('submitVoteBtn').addEventListener('click', ()=>{
+        try {
+            let groupId=parseInt(groupSelect.value);
+            let votes=getVotes();
+            let idx=votes.findIndex(v=>v.groupId===groupId);
+            if(idx>-1) votes[idx]={groupId, ...currentVote};
+            else votes.push({groupId, ...currentVote});
+            saveVotes(votes);
+            renderStarChart();
+            renderVoteChart();
+            alert('✅ Đã lưu điểm!');
+            playTing();
+        } catch(e) {
+            alert('❌ Lưu điểm thất bại!');
+            console.error(e);
+        }
+    });
+    document.getElementById('clearVotesBtn').addEventListener('click', ()=>{
+        if(confirm('Xóa hết điểm?') && confirm('Xác nhận lần cuối?')){
+            safeLS('stemBinVotes', []);
+            renderStarChart();
+            renderVoteChart();
+            playClick();
+        }
+    });
+
+    function renderStarChart() {
+        const container = document.getElementById('starChartContainer');
+        const votes = getVotes();
+        const groups = getGroups();
+        const labels = criteria.map(c => c.label);
+        const keys = criteria.map(c => c.id);
+        if (groups.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:2rem;">Chưa có nhóm nào.</p>';
+            return;
+        }
+        let html = '';
+        groups.forEach(g => {
+            const vote = votes.find(v => v.groupId === g.id) || { creative:0, useful:0, craft:0, aesthetic:0 };
+            html += `<div style="font-size:2rem; font-weight:bold; margin-top:10px;">${g.name}</div>`;
+            keys.forEach((key, i) => {
+                const val = vote[key] || 0;
+                const stars = '⭐'.repeat(val) + '☆'.repeat(10 - val);
+                html += `<div class="star-row"><span class="star-label">${labels[i]}</span><span class="stars">${stars}</span><span>${val}/10</span></div>`;
+            });
+            html += '<hr>';
+        });
+        container.innerHTML = html;
+    }
+
+    // ====== BIỂU ĐỒ CHART.JS ======
+    let voteChartInstance = null;
+    function renderVoteChart() {
+        const ctx = document.getElementById('voteChart');
+        if (!ctx) return;
+        const votes = getVotes();
+        const groups = getGroups();
+        if (groups.length === 0) {
+            if (voteChartInstance) { voteChartInstance.destroy(); voteChartInstance = null; }
+            return;
+        }
+        const labels = groups.map(g => g.name);
+        const colors = ['#42a5f5','#66bb6a','#ffa726','#ef5350','#ab47bc','#26c6da'];
+        const datasets = criteria.map((c, idx) => ({
+            label: c.label,
+            data: groups.map(g => {
+                const v = votes.find(v => v.groupId === g.id);
+                return v ? v[c.id] : 0;
+            }),
+            backgroundColor: colors[idx % colors.length],
+            borderRadius: 6,
+        }));
+        if (voteChartInstance) voteChartInstance.destroy();
+        voteChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { font: { size: 16 } } } },
+                scales: { y: { beginAtZero: true, max: 10, title: { display: true, text: 'Điểm' } } }
+            }
+        });
+    }
+
+    // ====== CHIA SẺ ======
+    document.getElementById('shareVotesBtn').addEventListener('click', function() {
+        const groups = getGroups();
+        const votes = getVotes();
+        let text = '📊 BẢNG ĐIỂM NHÓM\n─────────────────\n';
+        groups.forEach(g => {
+            const v = votes.find(v => v.groupId === g.id) || { creative:0, useful:0, craft:0, aesthetic:0 };
+            text += `👥 ${g.name}\n`;
+            text += `  💡 Sáng tạo: ${v.creative}/10\n`;
+            text += `  ⚙️ Ứng dụng: ${v.useful}/10\n`;
+            text += `  🔧 Gia công: ${v.craft}/10\n`;
+            text += `  🎨 Thẩm mỹ: ${v.aesthetic}/10\n─────────────────\n`;
+        });
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => alert('✅ Đã sao chép bảng điểm!'))
+                .catch(() => alert('❌ Không thể sao chép.'));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            alert('✅ Đã sao chép bảng điểm!');
+        }
+        playTing();
+    });
+
+    // ========== GAME THÁCH THỨC ==========
+    const gameState = {
+        score: 0,
+        highScore: parseInt(safeLS('gameHighScore')) || 0,
+        isPlaying: false,
+        timer: null,
+    };
+    const gameOptionsContainer = document.getElementById('gameOptions');
+    const gameQuestion = document.getElementById('gameQuestion');
+    const gameScoreDisplay = document.getElementById('gameScoreDisplay');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const gameMessage = document.getElementById('gameMessage');
+
+    function updateGameScoreUI() {
+        gameScoreDisplay.textContent = `Điểm: ${gameState.score}`;
+        highScoreDisplay.textContent = `🏅 Cao: ${gameState.highScore}`;
+    }
+    updateGameScoreUI();
+
+    function generateGameQuestion() {
+        const correctIndex = Math.floor(Math.random() * pickerData.length);
+        const correctItem = pickerData[correctIndex];
+        let wrongItems = pickerData.filter((_, i) => i !== correctIndex);
+        const shuffledWrong = wrongItems.sort(() => Math.random() - 0.5).slice(0, 3);
+        const options = [correctItem, ...shuffledWrong].sort(() => Math.random() - 0.5);
+        return { correct: correctItem, options };
+    }
+
+    function renderGameOptions(options, correctItem) {
+        gameOptionsContainer.innerHTML = '';
+        options.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = 'game-option';
+            div.style.background = `radial-gradient(circle at 20% 30%, ${opt.color}, #1a237e)`;
+            div.innerHTML = `${opt.emoji} ${opt.bin}`;
+            div.dataset.bin = opt.bin;
+            div.addEventListener('click', function() {
+                if (!gameState.isPlaying) return;
+                const isCorrect = this.dataset.bin === correctItem.bin;
+                if (isCorrect) {
+                    gameState.score += 10;
+                    if (gameState.score > gameState.highScore) {
+                        gameState.highScore = gameState.score;
+                        safeLS('gameHighScore', gameState.highScore);
+                        playFanfare();
+                    }
+                    this.classList.add('correct');
+                    gameMessage.textContent = '✅ Chính xác! +10 điểm';
+                    playTing();
+                } else {
+                    this.classList.add('wrong');
+                    gameMessage.textContent = `❌ Sai rồi! Đáp án đúng là ${correctItem.emoji} ${correctItem.bin}`;
+                    playSound('alarm');
+                    gameState.isPlaying = false;
+                    clearInterval(gameState.timer);
+                    document.querySelectorAll('.game-option').forEach(el => {
+                        if (el.dataset.bin === correctItem.bin) el.classList.add('correct');
+                    });
+                    setTimeout(() => { gameMessage.textContent += ' Nhấn "BẮT ĐẦU" để chơi tiếp.'; }, 1500);
+                }
+                updateGameScoreUI();
+                if (isCorrect) {
+                    setTimeout(() => { if (gameState.isPlaying) startNewRound(); }, 500);
+                } else {
+                    gameState.isPlaying = false;
+                    document.getElementById('startGameBtn').innerHTML = '<span>▶</span> CHƠI LẠI';
+                }
+            });
+            gameOptionsContainer.appendChild(div);
+        });
+    }
+
+    function startNewRound() {
+        if (!gameState.isPlaying) return;
+        const q = generateGameQuestion();
+        gameQuestion.innerHTML = `🔍 Rác: ${q.correct.emoji} ${q.correct.label}`;
+        renderGameOptions(q.options, q.correct);
+        gameMessage.textContent = '⏳ Chọn thùng đúng trong 3 giây!';
+        let timeLeft = 3;
+        clearInterval(gameState.timer);
+        gameState.timer = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(gameState.timer);
+                gameState.isPlaying = false;
+                gameMessage.textContent = `⏰ Hết giờ! Đáp án đúng là ${q.correct.emoji} ${q.correct.bin}`;
+                document.querySelectorAll('.game-option').forEach(el => {
+                    if (el.dataset.bin === q.correct.bin) el.classList.add('correct');
+                });
+                playSound('alarm');
+                document.getElementById('startGameBtn').innerHTML = '<span>▶</span> CHƠI LẠI';
+            }
+        }, 1000);
+    }
+
+    document.getElementById('startGameBtn').addEventListener('click', function() {
+        if (gameState.isPlaying) return;
+        gameState.isPlaying = true;
+        gameState.score = 0;
+        updateGameScoreUI();
+        this.innerHTML = '<span>⏳</span> ĐANG CHƠI...';
+        gameMessage.textContent = 'Bắt đầu!';
+        startNewRound();
+    });
+
+    document.getElementById('resetGameBtn').addEventListener('click', function() {
+        clearInterval(gameState.timer);
+        gameState.isPlaying = false;
+        gameState.score = 0;
+        updateGameScoreUI();
+        gameQuestion.innerHTML = '👆 Nhấn "BẮT ĐẦU" để chơi';
+        gameOptionsContainer.innerHTML = '';
+        gameMessage.textContent = '';
+        document.getElementById('startGameBtn').innerHTML = '<span>▶</span> BẮT ĐẦU';
+        playClick();
+    });
+
+    // ========== QR & CHECKLIST ==========
+    function generateQRCode(text=null) {
+        let qrDiv=document.getElementById('qrcode'); qrDiv.innerHTML='';
+        let url = text || document.getElementById('customUrl').value.trim();
+        if (!url) {
+            if (window.location.protocol === 'file:') url = 'http://localhost:8080/stem-check#checklist';
+            else url = window.location.href.split('#')[0] + '#checklist';
+        }
+        new QRCode(qrDiv, { text:url, width:200, height:200, colorDark:'#2e7d32', colorLight:'#fff' });
+    }
+    document.getElementById('generateQRBtn').addEventListener('click', ()=>generateQRCode());
+    document.getElementById('customUrl').addEventListener('keypress', (e)=>{ if(e.key==='Enter') generateQRCode(); });
+    document.getElementById('openChecklistBtn').addEventListener('click', ()=>{
+        let sec = document.getElementById('checklistSection');
+        sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+        if (sec.style.display === 'block') loadChecklist();
+    });
+    function loadChecklist() {
+        let saved = safeLS('stemChecklist') || {};
+        document.getElementById('check1').checked = saved.check1 || false;
+        document.getElementById('check2').checked = saved.check2 || false;
+        document.getElementById('check3').checked = saved.check3 || false;
+        document.getElementById('check4').checked = saved.check4 || false;
+        document.getElementById('commentInput').value = saved.comment || '';
+    }
+    document.getElementById('saveChecklistBtn').addEventListener('click', ()=>{
+        let state = {
+            check1: document.getElementById('check1').checked,
+            check2: document.getElementById('check2').checked,
+            check3: document.getElementById('check3').checked,
+            check4: document.getElementById('check4').checked,
+            comment: document.getElementById('commentInput').value
+        };
+        safeLS('stemChecklist', state);
+        document.getElementById('checklistSavedMsg').textContent = '✅ Đã lưu!';
+        setTimeout(()=>document.getElementById('checklistSavedMsg').textContent='',2000);
+        playPop();
+    });
+    document.getElementById('printChecklistBtn').addEventListener('click', ()=>{
+        const check1 = document.getElementById('check1').checked;
+        const check2 = document.getElementById('check2').checked;
+        const check3 = document.getElementById('check3').checked;
+        const check4 = document.getElementById('check4').checked;
+        const comment = document.getElementById('commentInput').value;
+        const win = window.open('', '_blank', 'width=600,height=400');
+        win.document.write(`
+            <html><head><title>Checklist</title>
+            <style>body{font-size:1.8rem;font-family:sans-serif;padding:20px;}label{display:block;margin:10px 0;}input[type="checkbox"]{width:24px;height:24px;}.comment{margin-top:20px;}</style>
+            </head><body>
+            <h2>✅ Bảng kiểm</h2>
+            <label><input type="checkbox" ${check1?'checked':''}> 📌 Dán nhãn</label>
+            <label><input type="checkbox" ${check2?'checked':''}> 🧴 Có nắp</label>
+            <label><input type="checkbox" ${check3?'checked':''}> 🎨 Trang trí</label>
+            <label><input type="checkbox" ${check4?'checked':''}> 📏 Kích thước</label>
+            <div class="comment">💬 Nhận xét: ${comment || ''}</div>
+            <p style="margin-top:30px;">In ngày: ${new Date().toLocaleDateString()}</p>
+            </body></html>
+        `);
+        win.document.close();
+        win.print();
+        win.close();
+    });
+
+    // ========== TUTORIAL ==========
+    document.getElementById('closeTutorialBtn').addEventListener('click',()=>{
+        document.getElementById('tutorialModal').classList.remove('active'); playClick();
+    });
+
+    // ========== INIT ==========
+    window.addEventListener('load', ()=>{
+        populateGroupSelect();
+        renderStarChart();
+        renderVoteChart();
+        generateQRCode();
+        renderHistory();
+        updateGameScoreUI();
+        if (window.location.hash === '#checklist') {
+            switchScreen('qr');
+            document.getElementById('checklistSection').style.display='block';
+            loadChecklist();
+        }
+    });
+})();
+</script>
+</body>
+</html>
